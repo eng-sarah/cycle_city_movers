@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cycle City Movers — Cycle Sort Puzzle</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="app">
+    <section class="card">
+      <header>
+        <div>
+          <h1>🏙️ Cycle City Movers <span style="color:var(--accent); font-weight:900;">(Cycle Sort)</span></h1>
+          <div class="sub">
+            Apartments expect a specific crate (0..N-1). Use <b>cycle-chasing</b> to place crates into their correct
+            homes.
+          </div>
+        </div>
+        <div class="hud">
+          <div class="pill">Level: <b id="level">1</b></div>
+          <div class="pill">Writes: <b id="writes">0</b></div>
+          <div class="pill">Time: <b id="time">--</b></div>
+          <div class="pill">Optimal: <b id="optimal">0</b></div>
+          <div class="pill">Score: <b id="score">0</b></div>
+          <button class="btn secondary" id="hintBtn">Show cycles</button>
+          <button class secondary" id="undoBtn">Undo</button>
+          <button class="btn" id="newBtn">New level</button>
+          <button class="btn danger" id="resetBtn">Reset</button>
+        </div>
+      </header>
+
+      <div class="main">
+        <div class="city" id="city" aria-label="apartment grid"></div>
+      </div>
+    </section>
+
+    <aside class="card">
+      <div class="side">
+        <p class="title">How to play</p>
+        <div class="help">
+          <ol>
+            <li>Click any apartment to <b>pick up</b> its crate.</li>
+            <li>The <b>home apartment</b> will glow pulsing green.</li>
+            <li>Click ANY apartment to <b>swap</b>. (Try to place it in the correct home to save moves!)</li>
+            <li>Complete cycles to sort the city.</li>
+          </ol>
+          <p><b>Goal:</b> Sort with minimal writes. (N - cycles).</p>
+        </div>
+
+        <label class="toggle">
+          <input type="checkbox" id="eduToggle" checked />
+          <div>
+            <div style="font-weight:800; font-size:13px;">Educational overlay</div>
+            <div style="font-size:12px; color:var(--muted);">Shows cycle decomposition color codes</div>
+          </div>
+        </label>
+
+        <div class="box">
+          <h3>Strategy</h3>
+          <p>You can swap anywhere, but random swaps usually waste moves. Always try to place the carried crate into its
+            <b>Home</b>.
+          </p>
+        </div>
+
+        <div class="box">
+          <h3>Scoring</h3>
+          <p id="scoreExplain">Finish near optimal to get 3★. Extra writes reduce stars.</p>
+        </div>
+
+      </div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- New Bottom HUD -->
+  <div class="bottom-hud" id="hand">
+    <div class="crate" id="handCrate"
+      style="opacity:0.25; background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.10)">—</div>
+    <div class="meta">
+      <div class="line1">Carrying: <span class="k" id="carrying">none</span></div>
+      <div class="line2" id="carryingHint">Pick up a crate to start a cycle.</div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <h2 id="modalTitle">Level Complete!</h2>
+      <p id="modalText">—</p>
+      <ul class="cycleList" id="cycleList"></ul>
+      <div class="rowBtns">
+        <button class="btn" id="nextBtn">Next level</button>
+        <button class="btn secondary" id="replayBtn">Replay</button>
+        <button class="btn danger" id="closeBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
