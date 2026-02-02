@@ -15,6 +15,7 @@ const modalTitle = document.getElementById('modalTitle');
 const modalText = document.getElementById('modalText');
 const cycleListEl = document.getElementById('cycleList');
 
+const hintBtn = document.getElementById('hintBtn');
 const newBtn = document.getElementById('newBtn');
 const resetBtn = document.getElementById('resetBtn');
 const undoBtn = document.getElementById('undoBtn');
@@ -43,8 +44,9 @@ let carryingFrom = null;
 let historyStack = []; // Stack of states for undo
 
 // Difficulty State
-let timeLimit = 0;
 let timeRemaining = 0;
+let startTime = 0;
+let elapsedTime = 0;
 let timerInterval = null;
 
 let lockedIndices = [];
@@ -129,21 +131,16 @@ function calcScore(w, opt) {
     return Math.max(0, base - penalty);
 }
 
+
 function startTimer() {
     stopTimer();
-    if (timeLimit === 0) {
-        timeEl.textContent = '--';
-        return;
-    }
-    timeRemaining = timeLimit;
+    startTime = Date.now();
+    elapsedTime = 0;
+
     updateTimerDisplay();
     timerInterval = setInterval(() => {
-        timeRemaining--;
+        elapsedTime = Math.floor((Date.now() - startTime) / 1000);
         updateTimerDisplay();
-        if (timeRemaining <= 0) {
-            stopTimer();
-            failLevel('Time out.');
-        }
     }, 1000);
 }
 
@@ -152,9 +149,8 @@ function stopTimer() {
 }
 
 function updateTimerDisplay() {
-    timeEl.textContent = timeLimit > 0 ? `${timeRemaining}s` : '--';
-    if (timeRemaining < 10) timeEl.style.color = 'var(--danger)';
-    else timeEl.style.color = 'var(--text)';
+    timeEl.textContent = `${elapsedTime}s`;
+    timeEl.style.color = 'var(--text)';
 }
 
 function failLevel(reason) {
@@ -397,14 +393,18 @@ function finish() {
 
     // Explicit comparison styling
     const comparison = `
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0; text-align:center;">
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin:20px 0; text-align:center;">
         <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
-            <div style="font-size:0.8em; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Your Moves</div>
-            <div style="font-size:1.8em; font-weight:bold; color:var(--text);">${writes}</div>
+            <div style="font-size:0.75em; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Moves</div>
+            <div style="font-size:1.6em; font-weight:bold; color:var(--text);">${writes}</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
+            <div style="font-size:0.75em; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Time</div>
+            <div style="font-size:1.6em; font-weight:bold; color:var(--text);">${elapsedTime}s</div>
         </div>
         <div style="background:rgba(124,247,212,0.1); padding:10px; border-radius:8px; border:1px solid rgba(124,247,212,0.3);">
-            <div style="font-size:0.8em; color:var(--accent); text-transform:uppercase; letter-spacing:1px;">Optimal</div>
-            <div style="font-size:1.8em; font-weight:bold; color:var(--accent);">${initialOptimal}</div>
+            <div style="font-size:0.75em; color:var(--accent); text-transform:uppercase; letter-spacing:1px;">Optimal</div>
+            <div style="font-size:1.6em; font-weight:bold; color:var(--accent);">${initialOptimal}</div>
         </div>
     </div>
     <div style="margin-top:10px; font-size:1.1em;">Rating: ${starStr}</div>
@@ -459,7 +459,7 @@ function configureDifficulty() {
     lockedIndices = [];
 
     // Level difficulty logic
-    if (level >= 2) timeLimit = Math.max(30, N * 5);
+    // if (level >= 2) timeLimit = Math.max(30, N * 5); // Removed time limit
 
     if (level >= 3) {
         const notSorted = arr.map((v, i) => ({ v, i })).filter(x => x.v !== correctValues[x.i]);
@@ -497,6 +497,39 @@ function resetGame() {
 
 // makePermutation removed (inlined)
 
+function showCycleHint() {
+    // Clear any existing highlights first
+    document.querySelectorAll('.cycle-highlight').forEach(el => el.classList.remove('cycle-highlight'));
+
+    if (isSorted()) {
+        showToast('No cycles - Sorted!', 'good');
+        return;
+    }
+
+    const cycles = cyclesOfPermutation(arr);
+    // Find first non-trivial cycle
+    const cycle = cycles.find(c => c.length > 1);
+
+    if (!cycle) {
+        showToast('No cycles found.', 'normal');
+        return;
+    }
+
+    // Highlight them
+    const apts = document.querySelectorAll('.apt');
+    cycle.forEach(idx => {
+        if (apts[idx]) apts[idx].classList.add('cycle-highlight');
+    });
+
+    showToast(`Highlighting cycle of length ${cycle.length}`, 'normal');
+
+    // Remove after 3s
+    setTimeout(() => {
+        document.querySelectorAll('.cycle-highlight').forEach(el => el.classList.remove('cycle-highlight'));
+    }, 3000);
+}
+
+hintBtn.addEventListener('click', showCycleHint);
 newBtn.addEventListener('click', () => newLevel(true));
 resetBtn.addEventListener('click', resetGame);
 undoBtn.addEventListener('click', undoLastMove);

@@ -274,6 +274,13 @@ h1 {
     background: linear-gradient(180deg, rgba(124, 247, 212, .10), rgba(255, 255, 255, .03));
 }
 
+.cycle-highlight {
+    box-shadow: 0 0 0 4px rgba(162, 85, 255, 0.6) !important;
+    border-color: rgba(162, 85, 255, 0.9) !important;
+    transform: scale(1.02);
+    z-index: 5;
+}
+
 /* Side panel */
 .side {
     padding: 16px;
